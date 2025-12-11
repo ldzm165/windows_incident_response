@@ -11,3 +11,6 @@ This script automates the collection of forensic evidence from Windows systems d
 3. Execute from Command Prompt:
 
 ir_windows.bat
+
+
+#### Disclaimer: This tool is for authorized incident response and forensic investigations only. Use in compliance with all applicable laws and organizational policies.
