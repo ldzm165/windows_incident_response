@@ -1,0 +1,51 @@
+name: Basic Security Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check for dangerous shell patterns
+        run: |
+          echo "🔍 Scanning for dangerous commands..."
+          # Common dangerous patterns in shell scripts
+          DANGER_PATTERNS=(
+            "rm -rf /"
+            ":(){ :|:& };:"
+            "mkfs"
+            "dd if=/dev"
+            "chmod 777"
+          )
+          
+          for pattern in "${DANGER_PATTERNS[@]}"; do
+            echo "Checking for: $pattern"
+            if grep -r "$pattern" . --include="*.sh"; then
+              echo "::warning::Found potentially dangerous pattern: $pattern"
+            fi
+          done
+          
+      - name: Validate shell script syntax
+        run: |
+          echo "📝 Checking shell script syntax..."
+          for file in $(find . -name "*.sh"); do
+            echo "Checking: $file"
+            if ! bash -n "$file"; then
+              echo "::error file=$file::Syntax error in shell script"
+              exit 1
+            fi
+          done
+          
+      - name: Check for large files
+        run: |
+          echo "📦 Checking file sizes..."
+          if find . -type f -size +5M; then
+            echo "::warning::Found files larger than 5MB"
+          fi
